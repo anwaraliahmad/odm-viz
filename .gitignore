@@ -20,6 +20,10 @@ out
 .cache
 *.local
 
+# Source maps
+**/*.js.map
+**/*.d.ts.map
+
 # Debug logs
 *.log
 npm-debug.log*
@@ -120,5 +124,5 @@ build
 #/packages/wasm/LAStools/
 TODO.md
 NOTES.md
-
+GEMINI.md
 # Submodules
