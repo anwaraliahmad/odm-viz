@@ -1,5 +1,13 @@
 # @odm-viz/laz-loader
 
+## 0.2.1
+
+### Patch Changes
+
+- b03b424: Fix (submodule, pnpm version) and enhance the CI workflow
+- Updated dependencies [b03b424]
+  - @odm-viz/wasm@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@odm-viz/laz-loader",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A React component for loading and rendering LAZ point cloud data with Three.js",
   "main": "dist/index.cjs",
   "module": "dist/index.js",

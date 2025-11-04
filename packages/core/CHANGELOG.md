@@ -1,5 +1,11 @@
 # @odm-viz/core
 
+## 0.2.1
+
+### Patch Changes
+
+- b03b424: Fix (submodule, pnpm version) and enhance the CI workflow
+
 ## 0.2.0
 
 ### Minor Changes
