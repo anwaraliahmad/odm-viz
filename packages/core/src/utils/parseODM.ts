@@ -9,17 +9,17 @@ export interface Shot {
   camera: string;
 }
 
-interface RawShotData {
-  [key: string]: Omit<Shot, 'filename'> & { filename?: string };
-}
+type RawShotData = Record<string, Omit<Shot, 'filename'> & { filename?: string }>;
 
-export async function parseShots(json: RawShotData): Promise<Shot[]> {
+/** Flatten a `{ [filename]: shot }` map into an array of shots. */
+export function parseShots(json: RawShotData): Shot[] {
   return Object.entries(json).map(([filename, shot]) => ({
     ...shot,
     filename: shot.filename || filename,
   }));
 }
 
-export function sampleShots(shots: Shot[], every: number = 3): Shot[] {
+/** Keep every `every`-th shot. */
+export function sampleShots(shots: Shot[], every = 3): Shot[] {
   return shots.filter((_, i) => i % every === 0);
 }

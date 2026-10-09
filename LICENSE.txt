@@ -23,12 +23,7 @@ SOFTWARE.
 
 THIRD-PARTY DEPENDENCY NOTICE:
 
-The 'packages/wasm' module includes code from the **LASzip** and **LASlib** libraries, which are part of the LAStools project (rapidlasso GmbH).
-
-These libraries are distributed under a mix of permissive licenses:
-1. **Apache License, Version 2.0.** (For LASzip core)
-2. **GNU Lesser General Public License (LGPL), Version 2.1.** (For LASlib API)
-
-Due to linking requirements, the source code used for the WASM component is considered governed by the LGPL 2.1 terms.
-
-Source code and license texts for these components are provided via Git Submodule and in the 'licenses/' directory.
+The WebAssembly module built from 'packages/las/rust' statically includes the `laz` crate
+(laz-rs, https://github.com/tmontaigu/laz-rs), a Rust port of LASzip by Thomas Montaigu,
+licensed under the Apache License, Version 2.0. A copy of that license is provided in
+'licenses/LICENSE-2.0.txt'.

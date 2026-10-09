@@ -1,0 +1,52 @@
+{
+  "name": "@odm-viz/las",
+  "version": "0.2.1",
+  "description": "Fast LAS/LAZ point cloud decoding in the browser: pure Rust compiled to WebAssembly, run in a Web Worker",
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pkg/odm_viz_las.js",
+    "pkg/odm_viz_las.d.ts",
+    "pkg/odm_viz_las_bg.wasm",
+    "pkg/odm_viz_las_bg.wasm.d.ts"
+  ],
+  "scripts": {
+    "build:wasm": "cargo build --manifest-path rust/Cargo.toml --release --target wasm32-unknown-unknown && wasm-bindgen --target web --out-dir pkg rust/target/wasm32-unknown-unknown/release/odm_viz_las.wasm",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "build": "pnpm build:wasm && pnpm build:ts",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "test": "vitest run",
+    "test:rust": "cargo test --manifest-path rust/Cargo.toml --release",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist pkg rust/target"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "rimraf": "^6.0.1",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  },
+  "keywords": [
+    "las",
+    "laz",
+    "lidar",
+    "point-cloud",
+    "webassembly",
+    "rust"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anwaraliahmad/odm-viz.git",
+    "directory": "packages/las"
+  }
+}

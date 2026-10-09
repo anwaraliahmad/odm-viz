@@ -1,172 +1,94 @@
 # ODM Viz
-<img width="2391" height="1172" alt="image" src="https://github.com/user-attachments/assets/9416ba9a-8126-4ad5-87ca-f3e1ddc665a6" />
 
-Just a personal sandbox mashing together turborepo, r3f, wasm and more. Currently focused on 3D viz for point clouds. Currently provides a simple `.LAZ` file decoder with a pipeline to a real-time point cloud viewer.
+Open LAS / LAZ point clouds and drone surveys in the browser: no install, no server, no upload.
+Files are decoded locally by a Rust → WebAssembly decoder running in a Web Worker and rendered
+with three.js / React Three Fiber.
 
-- **Turborepo** for optimized monorepo management
-- **WebAssembly** via Emscripten for near-native performance
-- **LASzip/LAZ** for efficient point cloud compression
-- **Three.js & React Three Fiber** for declarative 3D rendering
+<img width="2391" height="1172" alt="ODM Viz rendering a point cloud" src="https://github.com/user-attachments/assets/9416ba9a-8126-4ad5-87ca-f3e1ddc665a6" />
 
-The current MVP features a `.LAZ` file decoder with a real-time point cloud viewer, serving as a foundation for future 3D geospatial visualization tools.
+**Try it:** drop a `.las` / `.laz` file on the [demo](https://anwaraliahmad.github.io/odm-viz/),
+load the bundled Autzen sample, or link straight to any CORS-enabled file with
+`?url=https://…/cloud.laz`.
 
-## Architecture & Technology Stack
+## Features
 
-This project is structured as a **Turborepo Monorepo** using **pnpm** for package management, optimized for caching and build efficiency.
+- **LAS 1.0–1.4, point formats 0–10, LAZ and COPC files** decoded with [`laz-rs`][laz-rs] (a pure
+  Rust LASzip port) compiled to a ~60 kB (gzipped) WebAssembly module. No Emscripten, C++
+  submodules or Docker.
+- **Off the main thread.** Decoding runs in a Web Worker and the typed arrays are _transferred_
+  back with zero copies. Loads report download and decode progress and can be aborted.
+- **Survey-grade precision.** Real-world coordinates (UTM, state plane) are re-centred in
+  float64 before conversion to float32, so points keep millimetre precision instead of
+  snapping to a ~0.5 m grid.
+- **Colour by RGB, elevation, intensity or ASPRS classification**, switched by a shader uniform
+  without rebuilding geometry. Ramps are outlier-robust (percentile-based).
+- **Point budget.** Large files are evenly decimated across the whole extent instead of being
+  truncated.
+- Selective LAZ decompression: for LAS 1.4 layered formats (6–10), layers the viewer never
+  reads (GPS time, scan angle, extra bytes…) are skipped.
 
-| Category             | Component                                   | Notes                                                        |
-| :------------------- | :------------------------------------------ | :----------------------------------------------------------- |
-| **Frontend**         | React 18, TypeScript                        | Strict typing across all packages.                           |
-| **Rendering**        | Three.js, React Three Fiber (R3F)           | Declarative 3D scene management.                             |
-| **Native Toolchain** | Emscripten SDK (via Docker)                 | Provides a reproducible WASM build environment.              |
-| **WASM Dependency**  | LASzip/LASlib                               | Core LAZ decompression libraries. Sourced via Git Submodule. |
-| **Tooling**          | Turborepo, Changesets, Conventional Commits | Standardized release and commit quality workflows.           |
+## Packages
 
-### Key Packages
+| Package                          | What it is                                                                 |
+| :------------------------------- | :------------------------------------------------------------------------- |
+| [`@odm-viz/las`](packages/las)   | LAS/LAZ decoder: Rust core (`rust/`), wasm-bindgen glue, Web Worker client |
+| [`@odm-viz/r3f`](packages/r3f)   | `usePointCloud` hook + `<PointCloud>` component for React Three Fiber      |
+| [`@odm-viz/core`](packages/core) | Framework-free helpers: ASPRS classification table, ODM shot parsing       |
+| [`apps/demo`](apps/demo)         | The viewer app (Vite)                                                      |
 
-| Package               | Role                                                                                      |
-| :-------------------- | :---------------------------------------------------------------------------------------- |
-| `packages/wasm`       | **WASM Producer:** C++ source for LAZ/LASlib APIs. Built via Docker.                      |
-| `packages/laz-loader` | **WASM Consumer:** Handles module initialization and provides the data loading component. |
-| `packages/core`       | Shared TypeScript types, utility functions, and data models.                              |
-| `apps/demo`           | Client application consuming internal packages.                                           |
+```tsx
+import { Canvas } from '@react-three/fiber';
+import { PointCloud, usePointCloud } from '@odm-viz/r3f';
 
----
+function Viewer({ url }: { url: string }) {
+  const state = usePointCloud(url, { maxPoints: 4_000_000 });
+  return (
+    <Canvas>
+      {state.status === 'ready' && <PointCloud cloud={state.cloud} colorMode="elevation" />}
+    </Canvas>
+  );
+}
+```
 
-## Getting Started
+## Development
 
-### Prerequisites
+Prerequisites: Node 22+ with Corepack (`corepack enable`), a Rust toolchain via
+[rustup](https://rustup.rs) (the `wasm32-unknown-unknown` target is installed automatically
+from `rust-toolchain.toml`), and `wasm-bindgen-cli` matching the crate's version:
 
-1.  **Node.js 18+ with Corepack**
-    - Enable once per Node installation:
-      ```bash
-      corepack enable
-      ```
-    - This repo pins pnpm via `packageManager` in `package.json`. Corepack will select that version.
-2.  **Docker**
-    - Docker Desktop must be running to build the WASM module (Emscripten lives in the Docker image).
-3.  **Git Submodules**
-    - Fetch external source code dependencies (LASzip/LASlib):
-      ```bash
-      git submodule update --init --recursive
-      ```
+```bash
+cargo install wasm-bindgen-cli --version 0.2.129
+pnpm install
+pnpm build        # wasm + all packages + demo
+pnpm dev          # demo at http://localhost:5173
+```
 
-### First-Time Environment Setup
+| Command          | Does                                                   |
+| :--------------- | :----------------------------------------------------- |
+| `pnpm test`      | Vitest suites (decoder runs against real wasm in Node) |
+| `pnpm test:rust` | Rust tests: LAS/LAZ round-trips for formats 0, 3 and 7 |
+| `pnpm typecheck` | `tsc --noEmit` in every package                        |
+| `pnpm lint`      | ESLint (flat config) · `pnpm format` for Prettier      |
+| `pnpm changeset` | Record a change for the next release                   |
 
-1.  Install dependencies:
-    ```bash
-    pnpm install
-    ```
-2.  Build the WASM artifact (runs Docker buildx and emits to `packages/wasm/dist`):
-    ```bash
-    pnpm --filter @odm-viz/wasm build
-    ```
-3.  Build all packages (TypeScript bundles):
-    ```bash
-    pnpm build
-    ```
-4.  Start the demo app:
-    ```bash
-    pnpm dev
-    ```
+To check the decoder against a real file:
+`ODM_VIZ_SAMPLE=path/to/file.laz cargo test --release --manifest-path packages/las/rust/Cargo.toml -- --ignored --nocapture`
 
----
+Commits follow [Conventional Commits](https://www.conventionalcommits.org) (enforced by
+commitlint); releases are managed with [Changesets](https://github.com/changesets/changesets).
 
-## Development Workflow
+## Roadmap
 
-This project enforces a **Conventional Commits** standard and uses **Changesets** for release management.
+- [x] **Revive**: Rust/WASM decoder, worker pipeline, precision fixes, React 19 / R3F 9 / Vite 8,
+      tests, CI, GitHub Pages demo
+- [ ] **Stream**: COPC hierarchy + HTTP range requests, octree LOD by screen-space error, so
+      only the visible detail is ever downloaded
+- [ ] **WebGPU renderer**: compute-shader point rasterisation + eye-dome lighting, WebGL2 fallback
+- [ ] **ODM features**: camera poses and photo thumbnails, measurements, orthophoto drape,
+      Gaussian splats
 
-| Command                     | Description                                                                            | Notes                                                                                                                                                                                               |
-| :-------------------------- | :------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm build`                | Compiles all packages.                                                                 | Uses Turborepo caching.                                                                                                                                                                             |
-| `pnpm typecheck`            | Runs the TypeScript compiler check across the monorepo.                                |                                                                                                                                                                                                     |
-| `pnpm lint`                 | Executes ESLint and Prettier checks.                                                   |                                                                                                                                                                                                     |
-| `git commit`                | **Triggers husky hooks** for `lint-staged` (pre-commit) and `commitlint` (commit-msg). | Must follow **Conventional Commit** spec (e.g., `feat: add new feature`). Note: If you encounter husky deprecation warnings, please refer to the official husky documentation for the latest setup. |
-| `pnpm changeset`            | Creates a release entry (if using Changesets).                                         | Run before publishing PRs that change public API.                                                                                                                                                   |
-| `pnpm publish -r --dry-run` | Dry-run publish across workspaces.                                                     | Validate package contents before a real publish.                                                                                                                                                    |
+## License
 
----
+MIT. The WebAssembly module includes [`laz-rs`][laz-rs] (Apache-2.0); see [LICENSE.txt](LICENSE.txt).
 
-## Release & Publishing Workflow
-
-### Versioning with Changesets
-
-1. Create a changeset for user-visible changes:
-   ```bash
-   pnpm changeset
-   ```
-2. Bump versions and update changelogs:
-   ```bash
-   pnpm changeset version
-   ```
-3. Commit the version bump:
-   ```bash
-   git add -A && git commit -m "chore(release): version packages"
-   ```
-
-### Dry run and Publish (manual)
-
-1. Build wasm and packages:
-   ```bash
-   pnpm build:wasm && pnpm build
-   ```
-2. Dry run publish across workspaces:
-   ```bash
-   pnpm publish -r --dry-run
-   ```
-3. Publish (when ready):
-   ```bash
-   pnpm publish -r --access public
-   ```
-
-### Tags
-
-- Tag after publishing (optional but recommended):
-  ```bash
-  git tag -a v0.1.0 -m "v0.1.0"
-  git push --tags
-  ```
-
-### CI
-
-- CI builds wasm first, then runs lint, typecheck, tests, and package builds.
-- A separate release workflow can be added later to publish on tags. See TODO.md.
-
----
-
-## Usage
-
-- `@odm-viz/wasm` exposes a function to decode LAZ into typed arrays. The Emscripten module is single-file JS for simple hosting.
-- `@odm-viz/laz-loader` provides a React component `LAZModel` to fetch/decode and display point clouds in Three.js via React Three Fiber.
-
----
-
-## First Commit Checklist
-
-- Initialize repo and submodules:
-  ```bash
-  git init
-  corepack enable
-  pnpm install
-  git submodule update --init --recursive
-  git add -A
-  git commit -m "chore: initial commit"
-  # Create remote repo, then:
-  git branch -M main
-  git remote add origin <git-url>
-  git push -u origin main
-  ```
-- Verify local build:
-  ```bash
-  pnpm --filter @odm-viz/wasm build
-  pnpm build
-  pnpm -C apps/demo dev
-  ```
-- Confirm pre-commit hooks (lint-staged) and commitlint are active.
-- Open a PR template and CODEOWNERS (TBD) before first external contributions.
-
-## Licensing
-
-This project is licensed under the **MIT License** (see `LICENSE.txt`).
-
-The included **LASzip** and **LASlib** libraries are dual-licensed. The source code used for the WASM component is considered governed by the **LGPL 2.1** and **Apache 2.0** terms. Full license texts and attribution notices are provided in the `licenses/` directory.
+[laz-rs]: https://github.com/tmontaigu/laz-rs

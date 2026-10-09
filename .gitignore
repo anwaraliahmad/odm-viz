@@ -107,7 +107,7 @@ __pycache__/
 .nyc_output/
 
 # Example data
-/apps/demo/public/
+/apps/demo/public/*.la[sz]
 
 # Turbo
 .turbo/
@@ -126,3 +126,5 @@ TODO.md
 NOTES.md
 GEMINI.md
 # Submodules
+# wasm-bindgen output (built from packages/las/rust)
+packages/las/pkg/

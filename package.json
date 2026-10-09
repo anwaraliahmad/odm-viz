@@ -1,65 +1,41 @@
 {
   "name": "odm-viz-monorepo",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "dev": "turbo run dev --parallel",
-    "docker:build": "docker build -t odm-viz-emsdk:latest .",
-    "build:wasm": "pnpm --filter @odm-viz/wasm build",
-    "build": "pnpm run build:wasm && turbo run build",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "clean": "turbo run clean && rm -rf node_modules",
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,mdx,yml,yaml,css,scss}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md,mdx,yml,yaml,css,scss}\"",
+    "build": "turbo run build",
     "test": "turbo run test",
-    "typecheck": "tsc --noEmit",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "prepare": "husky install",
-    "lint:all": "turbo run lint --workspaces",
-    "test:all": "turbo run test --workspaces",
-    "typecheck:all": "turbo run typecheck --workspaces"
+    "test:rust": "pnpm --filter @odm-viz/las test:rust",
+    "typecheck": "turbo run typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "turbo run clean && rimraf node_modules",
+    "changeset": "changeset",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
-    "@eslint/compat": "^1.4.1",
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.39.1",
-    "@react-three/eslint-plugin": "^0.1.2",
-    "@react-three/fiber": "^8.18.0",
-    "@types/node": "^20.19.24",
-    "@types/react": "^18.3.26",
-    "@types/react-dom": "^18.3.7",
-    "@types/three": "^0.160.0",
-    "@typescript-eslint/eslint-plugin": "^8.46.3",
-    "@typescript-eslint/parser": "^8.46.3",
-    "changesets": "^1.0.2",
-    "eslint": "^9.39.1",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "globals": "^16.5.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.0.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.2",
-    "prettier": "^3.6.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.160.1",
-    "turbo": "latest",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.3",
-    "vite-plugin-top-level-await": "^1.6.0",
-    "vite-plugin-wasm": "^3.5.0"
+    "lint-staged": "^16.2.0",
+    "prettier": "^3.9.0",
+    "rimraf": "^6.0.1",
+    "turbo": "^2.11.7",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22"
   },
   "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
   "lint-staged": {
@@ -67,7 +43,7 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,mdx,yml,yaml,css,scss}": [
+    "*.{json,md,yml,yaml,css}": [
       "prettier --write"
     ]
   }
