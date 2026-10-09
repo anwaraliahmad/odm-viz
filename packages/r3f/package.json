@@ -1,0 +1,59 @@
+{
+  "name": "@odm-viz/r3f",
+  "version": "0.2.1",
+  "description": "React Three Fiber components for streaming, decoding and rendering LAS/LAZ point clouds",
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@odm-viz/core": "workspace:*",
+    "@odm-viz/las": "workspace:*"
+  },
+  "peerDependencies": {
+    "@react-three/fiber": "^9.0.0",
+    "react": "^19.0.0",
+    "three": ">=0.170.0"
+  },
+  "devDependencies": {
+    "@react-three/fiber": "^9.8.1",
+    "@types/react": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "react": "^19.3.0",
+    "rimraf": "^6.0.1",
+    "three": "^0.186.1",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  },
+  "keywords": [
+    "laz",
+    "las",
+    "lidar",
+    "point-cloud",
+    "three.js",
+    "react-three-fiber",
+    "opendronemap"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anwaraliahmad/odm-viz.git",
+    "directory": "packages/r3f"
+  }
+}

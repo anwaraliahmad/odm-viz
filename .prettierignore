@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+**/pkg/
+**/dist/
+**/target/
+**/CHANGELOG.md
